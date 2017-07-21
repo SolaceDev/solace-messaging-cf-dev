@@ -1,10 +1,10 @@
 #!/bin/bash
 
 export MY_BIN_HOME=$(dirname $(readlink -f $0))
+export PYTHONPATH=$MY_BIN_HOME
 export MY_HOME=$MY_BIN_HOME/..
 
 export DEPLOYMENT_NAME=${DEPLOYMENT_NAME:-"solace-vmr-warden-deployment"}
-export TEMPLATE_PREFIX=${TEMPLATE_PREFIX:-"solace-vmr-warden-deployment"}
 export LOG_FILE=${LOG_FILE:-"/tmp/bosh_deploy.log"}
 
 export SOLACE_DOCKER_BOSH_VERSION="29-solace-2"
@@ -118,32 +118,38 @@ function deleteDeploymentAndRelease() {
 
 }
 
+# Generates a bosh-lite manifest and prints it to stdout
+function generateManifest() {
+
+local VMR_JOB_NAME_ARG=""
+local CERT_ARG=''
+local HA_ARG=''
+if [ -n "$VMR_JOB_NAME" ]; then
+    VMR_JOB_NAME_ARG="-j $VMR_JOB_NAME"
+fi
+if [ "$CERT_ENABLED" == true ]; then
+    CERT_ARG="--cert"
+fi
+export PREPARE_MANIFEST_COMMAND="python3 ${MY_BIN_HOME}/prepareManifest.py $CERT_ARG $HA_ARG $VMR_JOB_NAME_ARG -w $WORKSPACE -p $POOL_NAME -d $TEMPLATE_DIR -n $DEPLOYMENT_NAME"
+>&2 echo "Running: $PREPARE_MANIFEST_COMMAND"
+${PREPARE_MANIFEST_COMMAND}
+
+if [ $? -ne 0 ]; then
+ >&2 echo
+ >&2 echo "Generating the Manifest failed."
+ exit 1
+fi 
+}
 
 function prepareManifest() {
 
-echo "Preparing a deployment manifest from template: $TEMPLATE_FILE "
+generateManifest > $MANIFEST_FILE
 
-if [ ! -f $TEMPLATE_FILE ]; then
- echo "Template file not found  $TEMPALTE_FILE"
+if [ $? -ne 0 ]; then
+ >&2 echo
+ >&2 echo "Preparing the Manifest failed."
  exit 1
-fi
-
-cp $TEMPLATE_FILE $MANIFEST_FILE
-
-echo "Preparing manifest file $MANIFEST_FILE"
-
-## Template keys to replace
-## __VMR_JOB_NAME__
-## __POOL_NAME__
-## __SOLACE_DOCKER_IMAGE__
-## __LIST_NAME__
-
-sed -i "s/__DEPLOYMENT_NAME__/$DEPLOYMENT_NAME/g" $MANIFEST_FILE
-sed -i "s/__VMR_JOB_NAME__/$VMR_JOB_NAME/g" $MANIFEST_FILE
-sed -i "s/__POOL_NAME__/$POOL_NAME/g" $MANIFEST_FILE
-sed -i "s/__SOLACE_DOCKER_IMAGE__/$SOLACE_DOCKER_IMAGE/g" $MANIFEST_FILE
-sed -i "s/__LIST_NAME__/$LIST_NAME/g" $MANIFEST_FILE
-
+fi 
 }
 
 function build() {
@@ -153,8 +159,8 @@ echo "Will build the BOSH Release (May take some time)"
 ./build.sh | tee -a $LOG_FILE
 
 if [ $? -ne 0 ]; then
- echo
- echo "Build failed."
+ >&2 echo
+ >&2 echo "Build failed."
  exit 1
 fi 
 
@@ -183,7 +189,7 @@ if [ -f $SOLACE_VMR_BOSH_RELEASE_FILE ]; then
  echo "yes" | bosh deploy | tee -a $LOG_FILE
 
 else
- echo "Could not locate a release file in $WORKSPACE/releases/solace-vmr-*.tgz"
+ >&2 echo "Could not locate a release file in $WORKSPACE/releases/solace-vmr-*.tgz"
  exit 1
 fi
 
@@ -312,7 +318,7 @@ function resetServiceBrokerSyslogEnvironment() {
 ###################### Common parameter processing ########################
 
 
-export BASIC_USAGE_PARAMS="-p [Shared-VMR|Large-VMR|Community-VMR|Medium-HA-VMR|Large-HA-VMR] -t [cert|no-cert|ha]"
+export BASIC_USAGE_PARAMS="-p [Shared-VMR|Large-VMR|Community-VMR|Medium-HA-VMR|Large-HA-VMR] -n (To not use a self-signed certificate)"
 
 CMD_NAME=`basename $0`
 
@@ -323,9 +329,9 @@ function showUsage() {
 }
 
 function missingRequired() {
-  echo
-  echo "Some required argument(s) were missing."
-  echo 
+  >&2 echo
+  >&2 echo "Some required argument(s) were missing."
+  >&2 echo 
 
   showUsage
   exit 1
@@ -335,22 +341,22 @@ function missingRequired() {
 #   missingRequired
 # fi
 
-while getopts :p:t:h opt; do
+while getopts :p:hn opt; do
     case $opt in
       p)
         export POOL_NAME=$OPTARG
       ;;
-      t)
-        export TEMPLATE_POSTFIX="-${OPTARG}"
+      n)
+        export CERT_ENABLED=false
       ;;
       h)
         showUsage
         exit 0
       ;;
       \?)
-      echo
-      echo "Invalid option: -$OPTARG" >&2
-      echo
+      >&2 echo
+      >&2 echo "Invalid option: -$OPTARG" >&2
+      >&2 echo
       showUsage
       exit 1
       ;;
@@ -369,67 +375,46 @@ if [ -z $POOL_NAME ]; then
    export POOL_NAME="Shared-VMR"
 fi
 
-if [ -z $TEMPLATE_POSTFIX ]; then
-   export TEMPLATE_POSTFIX="-cert"
+if [ -z $CERT_ENABLED ]; then
+    export CERT_ENABLED=true
 fi
 
 export VMR_JOB_NAME=${VMR_JOB_NAME:-$POOL_NAME}
 export VM_JOB=${VM_JOB:-"$VMR_JOB_NAME/0"}
 
-case $POOL_NAME in
-
-  Shared-VMR)
-	export SOLACE_DOCKER_IMAGE="latest-evaluation"
-        export LIST_NAME="shared"
-    ;;
-
-  Medium-HA-VMR)
-	export SOLACE_DOCKER_IMAGE="latest-evaluation"
-        export LIST_NAME="medium_ha"
-    ;;
-
-  Large-VMR)
-	export SOLACE_DOCKER_IMAGE="latest-evaluation"
-        export LIST_NAME="large"
-    ;;
-
-  Large-HA-VMR)
-	export SOLACE_DOCKER_IMAGE="latest-evaluation"
-        export LIST_NAME="large_ha"
-    ;;
-
-  Community-VMR)
-	export SOLACE_DOCKER_IMAGE="latest-community"
-        export LIST_NAME="community"
-    ;;
-
-  *)
-    echo
-    echo "Sorry, I don't seem to know about POOL_NAME: $POOL_NAME"
-    echo
+python3 -c "import commonUtils; commonUtils.isValidPoolName(\"$POOL_NAME\")"
+if [ "$?" -ne 0 ]; then
+    >&2 echo
+    >&2 echo "Sorry, I don't seem to know about POOL_NAME: $POOL_NAME"
+    >&2 echo
     showUsage
     exit 1
-    ;;
-esac
+fi
+
+export SOLACE_DOCKER_IMAGE_NAME=$(python3 -c "import commonUtils; commonUtils.getSolaceDockerImageName(\"$POOL_NAME\")")
+
+python3 -c "import commonUtils; commonUtils.getHaEnabled(\"$POOL_NAME\")"
+if [ "$?" -eq 0 ]; then
+    export HA_ENABLED=true
+else
+    export HA_ENABLED=false
+fi
 
 export SOLACE_VMR_BOSH_RELEASE_FILE=$(ls $WORKSPACE/releases/solace-vmr-*.tgz | tail -1)
 export SOLACE_VMR_BOSH_RELEASE_VERSION=$(basename $SOLACE_VMR_BOSH_RELEASE_FILE | sed 's/solace-vmr-//g' | sed 's/.tgz//g' | awk -F\- '{ print $1 }' )
 
-export TEMPLATE_FILE="$MY_HOME/templates/$SOLACE_VMR_BOSH_RELEASE_VERSION/${TEMPLATE_PREFIX}${TEMPLATE_POSTFIX}.yml.template"
+export TEMPLATE_DIR="$MY_HOME/templates/$SOLACE_VMR_BOSH_RELEASE_VERSION"
 export MANIFEST_FILE=${MANIFEST_FILE:-"$WORKSPACE/bosh-solace-manifest.yml"}
 
-if [ -f $TEMPLATE_FILE ]; then
- export NUM_INSTANCES=$( grep "instances:" $TEMPLATE_FILE | grep -v _vmr_instances | head -1 | awk '{ print $2 }' )
-else
- export NUM_INSTANCES=0
-fi
+export NUM_INSTANCES=$(generateManifest | grep "_vmr_instances" | head -n1 | awk '{print $2}')
 
 echo "$0 - Settings"
 echo "    SOLACE VMR     $SOLACE_VMR_BOSH_RELEASE_VERSION - $SOLACE_VMR_BOSH_RELEASE_FILE"
 echo "    Deployment     $DEPLOYMENT_NAME"
 echo "    VMR JOB NAME   $VMR_JOB_NAME"
+echo "    CERT_ENABLED   $CERT_ENABLED"
+echo "    HA_ENABLED     $HA_ENABLED"
 echo "    NUM_INSTANCES  $NUM_INSTANCES"
-
 
 INSTANCE_COUNT=0
 while [ "$INSTANCE_COUNT" -lt "$NUM_INSTANCES" ];  do

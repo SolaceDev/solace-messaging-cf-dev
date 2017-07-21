@@ -1,4 +1,4 @@
-name: __DEPLOYMENT_NAME__
+name: (( merge ))
 director_uuid: <%= `bosh status --uuid` %>
 
 releases:
@@ -15,10 +15,10 @@ compilation:
     name: random
 
 update:
-  canaries: 0
+  canaries: (( merge))
   canary_watch_time: 30000-240000
   update_watch_time: 30000-600000
-  max_in_flight: 3
+  max_in_flight: (( merge ))
 
 resource_pools:
 - name: common-resource-pool
@@ -38,7 +38,7 @@ networks:
     gateway: 10.244.0.1
     static:
       - 10.244.0.2
-      - 10.244.0.3
+      - <<: (( merge ))
     cloud_properties:
       name: random
   - range: 10.244.0.16/28
@@ -48,21 +48,20 @@ networks:
       name: random
 
 jobs:
-- name: __VMR_JOB_NAME__
+- <<: (( merge ))
   templates:
   -  {name: docker, release: docker}
   -  {name: prepare_vmr, release: solace-vmr}
   -  {name: containers, release: solace-vmr}
   -  {name: vmr_agent, release: solace-vmr}
-  instances: 1
   persistent_disk: 20480
   resource_pool: common-resource-pool
   networks:
   - name: test-network
     static_ips:
-      - 10.244.0.3
+      - <<: (( merge ))
   properties:
-    pool_name: '__POOL_NAME__'
+    <<: (( merge ))
     vmr_agent_port: 18080
     starting_port: 7000
     broker_user: 'solacedemo'
@@ -80,14 +79,8 @@ jobs:
     containers:
       - name: solace
         image: solace-bosh
-        dockerfile: |
-          FROM solace-app:__SOLACE_DOCKER_IMAGE__
-
-          RUN \
-            echo '#!/bin/bash' > /sbin/dhclient && \
-            echo 'exit 0' >> /sbin/dhclient && \
-            echo '3a:40:d5:42:f4:86' > /usr/sw/.nodeIdentifyingMacAddr && \
-            chmod +x /sbin/dhclient
+        memory: 4G
+        <<: (( merge ))
         env_vars:
          - "NODE_TYPE=MESSAGE_ROUTING_NODE"
          - "SERVICE_SSH_PORT=2222"
@@ -132,6 +125,4 @@ jobs:
     semp_ssl_port: 943
     system_domain: 'local.pcfdev.io'
     ssh_port: 2222
-    __LIST_NAME___vmr_list:
-      - 10.244.0.3
-    __LIST_NAME___vmr_instances: 1
+    <<: (( merge ))

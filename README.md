@@ -129,8 +129,8 @@ cd bosh-lite
 ~~~~
 
 * Then start bosh-lite: 
-  - Use VM_MEMORY=5000 if you want to host a single VMR
-  - Use VM_MEMORY=15000 if you want to host 3 VMRs that can form an HA Group
+ - Use VM_MEMORY=5000 if you want to host a single VMR
+ - Use VM_MEMORY=15000 if you want to host 3 VMRs that can form an HA Group
  
  - On Linux: 
 ~~~~

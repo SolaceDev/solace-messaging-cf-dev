@@ -39,8 +39,9 @@ which jq
 
 echo "Adding Python tools"
 sudo apt-get -y install python-virtualenv
-sudo apt-get -y install python-pip
+sudo apt-get -y install python-pip python3-pip
 sudo pip install shyaml
+sudo pip3 install pyyaml
 
 echo "Adding Java"
 sudo add-apt-repository ppa:openjdk-r/ppa -y
@@ -55,8 +56,19 @@ echo "Adding supporting perl modules used by rs-* scripts"
 sudo apt-get -y install libexpect-perl
 sudo apt-get -y install libterm-readkey-perl
 
+echo "Adding spiff"
+wget -q "https://github.com/cloudfoundry-incubator/spiff/releases/download/v1.0.8/spiff_linux_amd64.zip" -O /tmp/spiff_linux_amd64.zip
+( cd /tmp; unzip spiff_linux_amd64.zip )
+sudo mv /tmp/spiff /usr/bin/spiff
+rm -f /tmp/spiff_linux_amd64.zip
+which spiff
+
 echo '' >> .profile
-echo 'export SOLACE_MESSAGING_CF_DEV_REPO=${SOLACE_MESSAGING_CF_DEV_REPO:-"https://github.com/SolaceLabs/solace-messaging-cf-dev.git"}' >> .profile
+if [ -n "$SOLACE_MESSAGING_CF_DEV_REPO" ]; then
+    echo "export SOLACE_MESSAGING_CF_DEV_REPO=${SOLACE_MESSAGING_CF_DEV_REPO}" >> .profile
+else
+    echo 'export SOLACE_MESSAGING_CF_DEV_REPO=${SOLACE_MESSAGING_CF_DEV_REPO:-"https://github.com/SolaceLabs/solace-messaging-cf-dev.git"}' >> .profile
+fi
 echo 'echo "Will use solace-messaging-cf-dev from git repo $SOLACE_MESSAGING_CF_DEV_REPO"' >> .profile
 
 echo 'if [ ! -d ~/solace-messaging-cf-dev ]; then' >> .profile
@@ -149,7 +161,7 @@ Vagrant.configure(2) do |config|
   end
 
   #Install and configure the workstation
-  config.vm.provision :shell, :inline => $install_and_config_workstation
+  config.vm.provision :shell, :inline => $install_and_config_workstation, env: {"SOLACE_MESSAGING_CF_DEV_REPO" => ENV["SOLACE_MESSAGING_CF_DEV_REPO"] }
   # config.vm.provision :shell, :inline => $run_always, run: 'always'
   config.vm.provision :shell, path: "on_startup.sh", run: 'always'
 
