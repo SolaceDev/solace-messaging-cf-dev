@@ -7,7 +7,7 @@ export MY_HOME=$MY_BIN_HOME/..
 export DEPLOYMENT_NAME=${DEPLOYMENT_NAME:-"solace-vmr-warden-deployment"}
 export LOG_FILE=${LOG_FILE:-"/tmp/bosh_deploy.log"}
 
-export SOLACE_DOCKER_BOSH_VERSION="29-solace-2"
+export SOLACE_DOCKER_BOSH_VERSION="30.1.3"
 export SOLACE_DOCKER_BOSH=${SOLACE_DOCKER_BOSH:-"$WORKSPACE/releases/docker-${SOLACE_DOCKER_BOSH_VERSION}.tgz"}
 
 export STEMCELL_VERSION="3468"
