@@ -87,8 +87,8 @@ fi
 
 ## Derived values
 
-export TILE_VERSION=$( basename $TILE_FILE | sed 's/solace-messaging-//g' | sed 's/-enterprise//g' | sed 's/\.pivotal//g' )
-export TEMPLATE_VERSION=$( basename $TILE_FILE | sed 's/solace-messaging-//g' | sed 's/-enterprise//g' | sed 's/\.pivotal//g' | awk -F\- '{ print $1 }' )
+export TILE_VERSION=$( basename $TILE_FILE | sed 's/solace-messaging-//g' | sed 's/-enterprise//g' | sed 's/\.pivotal//g' | sed 's/\[.*\]//' )
+export TEMPLATE_VERSION=$( echo $TILE_VERSION | awk -F\- '{ print $1 }' )
 
 export TILE_FILE_PATH=$(readlink -f "$TILE_FILE")
 export WORKSPACE=${WORKSPACE-`dirname $TILE_FILE_PATH`}
