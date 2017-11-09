@@ -19,8 +19,8 @@ This guide will help you install the following VMs:
 
 ## Current and future state
 
-The initial version of this project will focus on re-using existing tools as standalone without attempting to merge them.
-The project also includes a subset of scripts that may benefit from refactoring in a single solid codebase.
+This version of the project is used as the deployment tool to support local testing by developers of Solace Messaging for PCF.
+It supports configuration driven deployments that work on a local BOSH-lite and PCFDev virtual machines.
 
 A future version of the project may attempt to use a single VM with all the tools. 
 
@@ -131,6 +131,7 @@ cd bosh-lite
 * Then start bosh-lite: 
   - Use VM_MEMORY=5000 if you want to host a single VMR
   - Use VM_MEMORY=15000 if you want to host 3 VMRs that can form an HA Group
+  - In general, use VM_MEMORY=5000 * [Number-of-VMRs]
  
  - On Linux: 
 ~~~~
@@ -165,10 +166,10 @@ The goal of the deployment steps is to install Solace Messaging into the running
 
 Please download the Solace Pivotal Tile and keep it around for later use. 
 
-For my example I have downloaded version 1.0.0 and placed it in:
+For my example I have downloaded version 1.2.0 and placed it in:
 
 ~~~~
-solace-messaging-cf-dev/workspace/solace-messaging-1.0.0.pivotal
+solace-messaging-cf-dev/workspace/solace-messaging-1.2.0.pivotal
 ~~~~
 
 
@@ -190,58 +191,30 @@ Use extract_tile.sh to extract the relevant contents we need.
 
 ~~~~
 cd workspace
-extract_tile.sh -t solace-messaging-1.0.0.pivotal
+extract_tile.sh -t solace-messaging-1.2.0.pivotal
 ~~~~
 
-You will find the relevant contents extracted to ~workspace/releases
+You will find the relevant contents extracted to ~/workspace/releases
 
-### Deployment Step 2 - Install the Solace Service Broker on PCF Dev
+### Deployment Step 2 - Deploy 
 
-installServiceBroker.sh script in cli-tools can do this for you:
-- login to PCFDev
-- install Service broker
-- bind service broker to a mysql database
-- add solace-messaging as a service in PCFDev
-- show the contents of the marketplace at the end of the installation.
+This will deploy the VMR(s) to BOSH-lite and run an bosh errand to deploy the Solace Service Broker and add solace-messaging as a service in PCFDev
 
+_If not sure what to pick just use the default with no parameters. Otherwise, please ensure that you have allocated enough memory to the BOSH-lite VM for the number and types of VMRs that you want to deploy_
+
+**Example:** Deploy the default which is a single instance of a Shared-VMR using a self-signed server certificate and evaluation vmr edition.
 ~~~~
-installServiceBroker.sh 
+deploy.sh
 ~~~~
 
+The deployment property file used as default can be found under [templates](templates/1.2.0/),  you can make a copy and edit it.
 
-### Deployment Step 3 - Deploy VMR(s) to BOSH-lite
-
-_Deploy only one and only once, you must use bosh_cleanup.sh if you want to re-deploy. if not sure what to pick just use the default with no parameters_
-
-Example deploy the default which is "Shared-VMR" with a self-signed server certificate.
-
+**Example:** Use a customized deployment property file from which a new bosh-manifest will be generated. 
 ~~~~
-bosh_deploy.sh
+deploy.sh -c custom_properties.yml
 ~~~~
 
-Example deploy a Community-VMR with the cert template, which uses a self-signed server certificate.
-
-~~~~
-bosh_deploy.sh -p Community-VMR -t cert
-~~~~
-
-Example deploy a Medium-HA-VMR using the ha template, which requests 3 VMR instances and uses a self-signed server certificate.
-
-~~~~
-bosh_deploy.sh -p Medium-HA-VMR -t ha
-~~~~
-
-_Keep in mind that not all Tile Releases contain all solace-messaging service plans.
-And that you may only deploy a single service plan which is controlled by the pool name (-p) to BOSH-lite.
-The flag for the pool name (-p) will correspond to a service plan in the marketplace_
-
-Pool name to service plan mapping:
-
-- Shared-VMR => shared
-- Large-VMR => large
-- Community-VMR => community
-- Medium-HA-VMR => medium-ha
-- Large-HA-VMR => large-ha
+_The current deployment can be updated by simply rerunning the deployment script._
 
 ## Using the Deployment
 
@@ -285,7 +258,7 @@ cf m
 
 You can use your browser to examine the deployed [ service broker dashboard ](http://solace-messaging.local.pcfdev.io/)
 
-You will need a username and password: solacedemo is the default as set in service-broker-manifest.yml obtained from [templates](./templates)
+You will need a username and password: solacedemo is the default as set for this deployment.
 
 You can also run a script that will fetch a variety of information from the service broker
 ~~~~
@@ -294,7 +267,7 @@ getServiceBrokerInfo.sh
 
 ## How to suspend and resume VMs
 
-The VMs we created can be suspended and resumed at a later time. 
+The VMs we created can be suspended and resumed at a later time.
 This way you don't need to recreate them. Their state is saved to disk.
 
 ### Suspending all VMS
@@ -331,14 +304,14 @@ cf dev resume
 From the cli-tools vm:
 
 ~~~~
-bosh vms
+bosh -e lite vms
 ~~~~
 
 ### Access the VMR cli
 
 Get the list of vms, to find the IP address of the VMR instance you want:
 ~~~~
-bosh vms
+bosh -e lite vms
 ~~~~
 
 Now ssh to the VMR, the default password is 'admin'.
@@ -350,28 +323,16 @@ ssh -p 2222 admin@10.244.0.3
 
 ## How to cleanup
 
-### How to delete the Solace VMR Service 
+### Delete the Solace VMR Service
 ~~~~
 cf delete-service -f solace-messaging-demo-instance
 ~~~~
 
-### How to remove the solace-messaging service from PCFDev
+### Deleting the deployment
 
-You should only do this after you have unbound and deleted any solace-messaging services you previously created.
+From the cli-tools vm:
 ~~~~
-uninstallServiceBroker.sh
-~~~~
-
-### To remove a deployment from BOSH-lite
-
-Use the same parameters with bosh_cleanup.sh as the one you did with bosh_deploy.sh.
-
-_If you remove a deployment from BOSH-lite the service-broker inventory will be out-of-sync with the deployment.
-Just re-install the service broker to reset everything._
-
-~~~~
-bosh_cleanup.sh -p Shared-VMR -t cert
-installServiceBroker.sh 
+cleanup.sh
 ~~~~
 
 ### How to delete BOSH-lite VM

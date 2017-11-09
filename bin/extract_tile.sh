@@ -87,11 +87,11 @@ fi
 
 ## Derived values
 
-export TILE_VERSION=$( basename $TILE_FILE | sed 's/solace-messaging-//g' | sed 's/\.pivotal//g' )
-export TEMPLATE_VERSION=$( basename $TILE_FILE | sed 's/solace-messaging-//g' | sed 's/\.pivotal//g' | awk -F\- '{ print $1 }' )
+export TILE_VERSION=$( basename $TILE_FILE | sed 's/solace-messaging-//g' | sed 's/-enterprise//g' | sed 's/\.pivotal//g' )
+export TEMPLATE_VERSION=$( basename $TILE_FILE | sed 's/solace-messaging-//g' | sed 's/-enterprise//g' | sed 's/\.pivotal//g' | awk -F\- '{ print $1 }' )
 
 export TILE_FILE_PATH=$(readlink -f "$TILE_FILE")
-export WORKSPACE=$(dirname $TILE_FILE_PATH)
+export WORKSPACE=${WORKSPACE-`dirname $TILE_FILE_PATH`}
 
 export TEMPLATE_DIR=$SCRIPTPATH/../templates/$TEMPLATE_VERSION 
 
@@ -117,17 +117,18 @@ if [ -d $WORKSPACE/releases ]; then
  rm -rf $WORKSPACE/releases
 fi
 
-unzip -d $WORKSPACE $TILE_FILE releases/*.tgz
+if [ -d $WORKSPACE/metadata ]; then
+ echo "Clean up of old metadata"
+ rm -rf $WORKSPACE/metadata
+fi
+
+unzip -o -d $WORKSPACE $TILE_FILE releases/*.tgz metadata/solace-messaging.yml
 
 ( 
-  cd $TEMP_DIR
-  echo "Looking for $WORKSPACE/releases/solace-messaging-${TILE_VERSION}.tgz"
-  tar -xzf $WORKSPACE/releases/solace-messaging-${TILE_VERSION}.tgz ./packages/solace_messaging.tgz 
-  SB_JAR=$(tar -tzf ./packages/solace_messaging.tgz | grep jar)
-  echo "Detected Solace Service Broker jar path $SB_JAR"
-  tar -xOzf ./packages/solace_messaging.tgz $SB_JAR > $WORKSPACE/releases/solace-messaging.jar
-  echo "Extracted Solace Service Broker to $WORKSPACE/releases/solace-messaging.jar"
-  rm -f $WORKSPACE/releases/solace-messaging-${TILE_VERSION}.tgz
-  echo
+  if [ -f $TEMPLATE_DIR/trusted.crt ]; then
+	 echo "Copy $TEMPLATE_DIR/trusted.crt $WORKSPACE"
+	 cp $TEMPLATE_DIR/trusted.crt $WORKSPACE
+  fi
+  echo "Extracting is completed"
 )
 

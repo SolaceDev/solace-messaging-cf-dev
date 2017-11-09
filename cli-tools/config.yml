@@ -1,4 +1,4 @@
-box_name: "ubuntu/trusty64"
+box_name: "ubuntu/zesty64"
 #box_url:
 host_name: solace-messaging-cf-dev.cli-tools
 vm.name: solace-messaging-cf-dev.cli-tools
