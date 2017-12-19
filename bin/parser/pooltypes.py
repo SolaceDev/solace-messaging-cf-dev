@@ -69,7 +69,7 @@ class PoolType:
             echo 'exit 0' >> /sbin/dhclient && \\
             echo '3a:40:d5:42:f4:86' > /usr/sw/.nodeIdentifyingMacAddr && \\
             chmod +x /sbin/dhclient""".format(self.solaceDockerImageName))
-        output["properties"]["containers"][0]["env_file"] = "/var/vcap/packages/vmr_config_scripts/vmr_docker_env"
+        output["properties"]["containers"][0]["env_file"] = "/var/vcap/store/containers/solace/vmr_config/vmr_docker_env"
         output["properties"]["containers"][0]["encrypted_vars"] = [
             "DEBUG_USERNAME_ROOT_ENCRYPTEDPASSWORD=solace1"
         ]
