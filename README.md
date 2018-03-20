@@ -2,35 +2,38 @@
 
 This project provides instructions and tools that support local development and testing of Solace Messaging for Cloud Foundry.
 
-A Deployment Solace Messaging for Cloud Foundry has prerequisites for which this guide will provide steps to complete:
-
-- A deployment of [BOSH](https://github.com/cloudfoundry/bosh) or [BOSH-lite](https://github.com/cloudfoundry/bosh-lite): Hosts the VMRs
-- A deployment of [Cloud Foundry](https://github.com/cloudfoundry/cf-deployment): Hosts the Solace Service Broker and your Test Applications.
-- A deployment of [Cloud Foundry MySQL](https://github.com/cloudfoundry/cf-mysql-deployment): Required by the Solace Service Broker
-- A [Solace BOSH Deployment](https://github.com/SolaceDev/cf-solace-messaging-deployment/): Defines and produces the bosh manifests to deploy Solace Messaging for Cloud Foundry
-
-
-## Windows vs Linux or Mac:
-
-Due to these issues, this guide will provide different steps for deploying on Windows than Linux or Mac.
-
-- Windows is not yet supported by [bosh create-env](https://github.com/cloudfoundry/bosh/issues/1821)
-  - Workaround: use the old [Vagrant based BOSH Lite](https://github.com/cloudfoundry/bosh-lite/blob/master/docs/README.md). 
-- CF logging features do not work on a deployment of [Cloud Foundry](https://github.com/cloudfoundry/cf-deployment) to the [Vagrant based BOSH Lite](https://github.com/cloudfoundry/bosh-lite/blob/master/docs/README.md)
-  - Workaround: use [PCFDev](https://pivotal.io/pcf-dev) to host the CF deployment and p-mysql. 
-
-
 ## Table of Contents:
 
+* [Operating System](#operating-system)
 * [Hardware Requirements](#hardware-requirements)
 * [Installation Requirements](#installation-requirements)
 * [Overview of Windows Deployment](#windows-overview)
-* [Installation on Windows](#installation-on-windows)
+  * [Installation on Windows](#installation-on-windows)
 * [Overview of Linux Deployment](#linux-overview)
-* [Installation on Linux](#installation-on-linux)
+  * [Installation on Linux](#installation-on-linux)
 * [Solace Messaging Deployment](#solace-messaging-deployment)
 * [Other useful commands and tools](#other-useful-commands-and-tools)
 
+A Deployment Solace Messaging for Cloud Foundry has prerequisites for which this guide will provide steps to satisfy:
+
+- A deployment of [BOSH](https://github.com/cloudfoundry/bosh) or [BOSH-lite](https://github.com/cloudfoundry/bosh-lite): Hosting the VMRs
+- A deployment of [Cloud Foundry](https://github.com/cloudfoundry/cf-deployment): Hosting the Solace Service Broker and Test Applications.
+- A deployment of [Cloud Foundry MySQL](https://github.com/cloudfoundry/cf-mysql-deployment): Required by the Solace Service Broker
+- A [Solace BOSH Deployment](https://github.com/SolaceDev/cf-solace-messaging-deployment/): Defines and produces the bosh manifests to deploy Solace Messaging for Cloud Foundry
+
+<a name="operating-system"></a>
+## Operating system
+
+This project and its tools will work on Windows, Linux and Mac.
+
+The following issues have been noted for Windows, this guide will provide different steps for deploying on Windows than Linux or Mac.
+
+- Windows is not yet supported by [bosh create-env](https://github.com/cloudfoundry/bosh/issues/1821)
+  - Workaround: use the old [Vagrant based BOSH-lite](https://github.com/cloudfoundry/bosh-lite/blob/master/docs/README.md). 
+- CF logging features do not work on a deployment of [Cloud Foundry](https://github.com/cloudfoundry/cf-deployment) to the [Vagrant based BOSH-lite](https://github.com/cloudfoundry/bosh-lite/blob/master/docs/README.md)
+  - Workaround: use [PCFDev](https://pivotal.io/pcf-dev) to host the CF deployment and p-mysql. 
+
+<a name="hardware-requirements"></a>
 ## Hardware Requirements
 
 Each of the following requirements for tools and software products needs to be satisfied.
@@ -42,7 +45,8 @@ RAM is biggest requirement, 16GB is the minimum, and 32GB is preferred.
 
 You will also need at least 40GB of free disk space.
 
-### Installation Requirements
+<a name='installation-requirements'></a>
+## Installation Requirements
 
 While there may be no need for internet access once the setup is completed, it is certainly required during the setup.
 All the steps during the setup will access the internet to download and install correctly.
