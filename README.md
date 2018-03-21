@@ -190,6 +190,8 @@ vagrant ssh -c "sudo /vagrant/create_swap.sh 2048 additionalSwapFile"
 
 _Without enabled routing, the VMs will not be able to communicate. You will have re-run the add-route* scripts if you reboot your computer_
 
+You are now ready for a [Solace Messaging Deployment](#solace-messaging-deployment)
+
 <a name="installation-on-linux"></a>
 # Installation on Linux
 
@@ -199,6 +201,15 @@ _Without enabled routing, the VMs will not be able to communicate. You will have
 The goal of the installation is to prepare the required deployments.
 
 ![](resources/installation-linux.png)
+
+This guide will help you install and deploy the following:
+
+* cli-tools to provide a reliable environment to run the scripts of this project.
+  - Tested with 512mb of ram, just enough to run some scripts.
+  - You may wish to increase the ram if you want to test applications from this VM. The setting for ram is in [config.yml](cli-tools/config.yml).
+* BOSH-lite for hosting CF, P-MYSQL, Solace VMRs.
+  - Size as recommended below to fit the VMRs.
+* A Deployment of CF and P-MYSQL to BOSH-lite.
 
 The setup was last tested on:
 
@@ -224,10 +235,14 @@ On your computer, clone this project and start up the cli-tools vm. We will come
 ~~~~
 git clone https://github.com/SolaceLabs/solace-messaging-cf-dev.git
 cd solace-messaging-cf-dev
+~~~~
+
+Startup the cli-tools vm. 
+
+~~~~
 cd cli-tools
 vagrant up
 ~~~~
-
 
 Just an example on how to run commands in cli-tools vm, which you need to do later.
 ~~~~
@@ -242,23 +257,25 @@ exit
 _The cli-tools VM will contains all the necessary tools to run the scripts of this project, including 
 another clone of this project. The workspace folder visible on your computer is shared with the cli-tools VM._
 
-### Installation on Linux - Step 2 - BOSH-Lite VM
+_The cli-tools VM is optional on Linux and Mac if you install the required tools_
+
+### Installation on Linux - Step 2 - BOSH-lite VM
 
 A quick way to get started with BOSH is to use [BUCC](https://github.com/starkandwayne/bucc), it provides a convenient wrapper around a [bosh-deployment](https://github.com/cloudfoundry/bosh-deployment).
 
-To set BOSH-Lite please use [bin/setup_bosh_bucc.sh](bin/setup_bosh_bucc), this script will do the following:
+To set BOSH-lite please use [bin/setup_bosh_bucc.sh](bin/setup_bosh_bucc), this script will do the following:
 
 * Download and set up the bucc cli
-* Create the BOSH-Lite VM
-* Create additional swap space on the BOSH-Lite VM
-* Enable routing so that your hosting computer can communicate with the VMs hosting BOSH-Lite
+* Create the BOSH-lite VM
+* Create additional swap space on the BOSH-lite VM
+* Enable routing so that your hosting computer can communicate with the VMs hosting BOSH-lite
 
-* The following environment variable parameters are available to adjust the size of the BOSH-Lite VM when creating it.
+* The following environment variable parameters are available to adjust the size of the BOSH-lite VM when creating it.
   - VM_MEMORY=8192 is the default: it is enough to support the deployment of CF, CF-MYSQL and a single VMR
   - VM_SWAP=8192 is the default: it is enough to support up to 4 VMRs before needing to add more.
   - VM_DISK_SIZE=65_536 is the default: it is enough to support up to 4 VMRs before needing more storage.
   - VM_EPHEMERAL_DISK_SIZE=32_768 is the default: it provides enough room to spare for multiple deployments and re-deployment. You should not need to adjust this.
-  - In general under a BOSH-Lite deployment you should add 4000 Mb to VM_MEMORY and 2000 Mb to VM_SWAP per additional VMR.
+  - In general under a BOSH-lite deployment you should add 4000 Mb to VM_MEMORY and 2000 Mb to VM_SWAP per additional VMR.
 
 ~~~~
 cd bin
@@ -267,7 +284,7 @@ cd bin
 
 ### Installation on Linux - Step 3 - Deploy CF and p-mysql 
 
-To deploy CF and p-mysql in BOSH-Lite to host the Solace service broker and other applications:
+To deploy CF and p-mysql in BOSH-lite to host the Solace service broker and other applications:
 
 * Run [cf_deploy.sh](bin/cf_deploy.sh). This script will deploy cf from this repository: [cf-deployment](https://github.com/cloudfoundry/cf-deployment). 
 * Run [cf_mysql_deploy.sh](bin/cf_mysql_deploy.sh). This script will deploy p-mysql from this repository: [cf-mysql-deployment](https://github.com/cloudfoundry/cf-mysql-deployment).
@@ -277,6 +294,8 @@ cd bin
 ./cf_deploy.sh 
 ./cf_mysql_deploy.sh 
 ~~~~ 
+
+You are now ready for a [Solace Messaging Deployment](#solace-messaging-deployment)
 
 <a name="solace-messaging-deployment"></a>
 # Solace Messaging Deployment
@@ -325,9 +344,9 @@ extract_tile.sh -t solace-messaging-1.4.0.pivotal
 
 You will find the relevant contents extracted to ~/workspace/releases
 
-### Deployment Step 2 - Upload the bosh releases to BOSH-Lite
+### Deployment Step 2 - Upload the bosh releases to BOSH-lite
 
-To upload the extracted bosh releases to BOSH-Lite.
+To upload the extracted bosh releases to BOSH-lite.
 
 ~~~~
 solace_upload_releases.sh
