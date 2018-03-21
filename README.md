@@ -419,12 +419,12 @@ cf m
 You can use your browser to examine the deployed service broker dashboard: 
 
 * On Windows, having PCF-Dev deployed service broker
- * [ service broker dashboard ](http://solace-messaging.local.pcfdev.io/)
- * You will need a username and password: solacedemo is the default as set for this deployment.
+  * [ service broker dashboard ](http://solace-messaging.local.pcfdev.io/)
+  * You will need a username and password: solacedemo is the default as set for this deployment.
 
 * On Linux, service broker on CF-Deployment
- * [ service broker dashboard ](http://solace-messaging.bosh-lite.com/)
- * TODO: How to get the credentials to access the service broker
+  * [ service broker dashboard ](http://solace-messaging.bosh-lite.com/)
+  * TODO: How to get the credentials to access the service broker
 
 You can also run a script that will fetch a variety of information from the service broker
 ~~~~
