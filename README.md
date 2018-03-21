@@ -200,13 +200,22 @@ The goal of the installation is to prepare the required deployments.
 
 ![](resources/installation-linux.png)
 
-_The setup was last tested on Linux host with 64GB of RAM, using:_
+The setup was last tested on:
+
+_Linux host with 64GB of RAM, using:_
 - git version 1.8.3.1
 - Vagrant 1.9.7
 - VirtualBox Version 5.1.22 r115126 
 
+_Mac host with 16GB of RAM, using:_
+- git version 2.15.1
+- Vagrant 2.0.1
+- VirtualBox Version 5.2.6
+
 <a name="installation-steps-on-linux"></a>
 # Installation Steps on Linux
+
+These steps are also applicable on a Mac.
 
 ### Installation on Linux - Step 1 - Clone this project and start up its cli-tools vm
 
@@ -244,11 +253,11 @@ To set BOSH-Lite please use [bin/setup_bosh_bucc.sh](bin/setup_bosh_bucc), this 
 * Create additional swap space on the BOSH-Lite VM
 * Enable routing so that your hosting computer can communicate with the VMs hosting BOSH-Lite
 
-* The following parameters are available to adjust the size of the BOSH-Lite VM when creating it.
+* The following environment variable parameters are available to adjust the size of the BOSH-Lite VM when creating it.
   - VM_MEMORY=8192 is the default: it is enough to support the deployment of CF, CF-MYSQL and a single VMR
   - VM_SWAP=8192 is the default: it is enough to support up to 4 VMRs before needing to add more.
   - VM_DISK_SIZE=65_536 is the default: it is enough to support up to 4 VMRs before needing more storage.
-  - VM_EPHEMERAL_DISK_SIZE=32_768 is the default: it provide suffucient room to spare with multiple deployments and re-deployment. You should not need to adjust this.
+  - VM_EPHEMERAL_DISK_SIZE=32_768 is the default: it provides enough room to spare for multiple deployments and re-deployment. You should not need to adjust this.
   - In general under a BOSH-Lite deployment you should add 4000 Mb to VM_MEMORY and 2000 Mb to VM_SWAP per additional VMR.
 
 ~~~~
@@ -260,8 +269,8 @@ cd bin
 
 To deploy CF and p-mysql in BOSH-Lite to host the Solace service broker and other applications:
 
-* Run [cf_deploy.sh](bin/cf_deploy.sh). This script will deploy cf from this repository: [https://github.com/cloudfoundry/cf-deployment](https://github.com/cloudfoundry/cf-deployment). 
-* Run [cf_mysql_deploy.sh](bin/cf_mysql_deploy.sh). This script will deploy cf-mysql from this repository: [https://github.com/cloudfoundry/cf-mysql-deployment](https://github.com/cloudfoundry/cf-mysql-deployment).
+* Run [cf_deploy.sh](bin/cf_deploy.sh). This script will deploy cf from this repository: [cf-deployment](https://github.com/cloudfoundry/cf-deployment). 
+* Run [cf_mysql_deploy.sh](bin/cf_mysql_deploy.sh). This script will deploy p-mysql from this repository: [cf-mysql-deployment](https://github.com/cloudfoundry/cf-mysql-deployment).
 
 ~~~~
 cd bin
