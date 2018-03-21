@@ -257,7 +257,7 @@ exit
 _The cli-tools VM will contains all the necessary tools to run the scripts of this project, including 
 another clone of this project. The workspace folder visible on your computer is shared with the cli-tools VM._
 
-_The cli-tools VM is optional on Linux and Mac if you install the required tools_
+_The cli-tools VM is optional on Linux and Mac if you install the required tools: TODO_
 
 ### Installation on Linux - Step 2 - BOSH-lite VM
 
