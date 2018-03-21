@@ -313,22 +313,30 @@ cd cli-tools
 vagrant ssh
 ~~~~
 
-### Deployment Step 1 - Extract the contents of the Solace Pivotal Tile
+### Deployment Step 1 - Extract the bosh releases from the Solace Pivotal Tile
 
-The pivotal file is a zip file. We need to extract the parts we need for this deployment.
+The pivotal file is a zip file. We need to extract the relevant bosh releases needed for this deployment.
 
-Do the following to extract the tile contents and upload the relevant bosh releases to BOSH-Lite.
+Do the following to extract the tile contents:
 
 ~~~~
 extract_tile.sh -t solace-messaging-1.4.0.pivotal
-solace_upload_releases.sh
 ~~~~
 
 You will find the relevant contents extracted to ~/workspace/releases
 
-### Deployment Step 2 - Deploy 
+### Deployment Step 2 - Upload the bosh releases to BOSH-Lite
 
-This will deploy the VMR(s) to BOSH-lite and run an bosh errand to deploy the Solace Service Broker and add solace-messaging as a service in PCF-Dev
+To upload the extracted bosh releases to BOSH-Lite.
+
+~~~~
+solace_upload_releases.sh
+~~~~
+
+
+### Deployment Step 3 - Deploy 
+
+This will deploy the VMR(s) to BOSH-lite and run an bosh errand to deploy the Solace Service Broker and add solace-messaging as a service in Cloud Foundry.
 
 _If not sure what to pick just use the default with no parameters. Otherwise, please ensure that you have allocated enough memory to the BOSH-lite VM for the number and types of VMRs that you want to deploy_
 
