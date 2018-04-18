@@ -6,7 +6,7 @@ export WORKSPACE=${WORKSPACE:-$SCRIPTPATH/../workspace}
 
 source $SCRIPTPATH/common.sh
 
-BOSH_LITE_AWS=${BOSH_LITE_AWS:-$WORKSPACE/bosh-lite-aws}
+export BOSH_LITE_AWS=${BOSH_LITE_AWS:-$WORKSPACE/bosh-lite-aws}
 
 export BOSH_NON_INTERACTIVE=${BOSH_NON_INTERACTIVE:-true}
 
@@ -24,6 +24,14 @@ export BOSH_ENVIRONMENT=$EXTERNAL_IP
 if [ -f $BOSH_LITE_AWS/creds.yml ]; then
   export BOSH_CLIENT_SECRET=$(bosh int $BOSH_LITE_AWS/creds.yml --path /admin_password)
   export BOSH_CA_CERT=$(bosh int $BOSH_LITE_AWS/creds.yml --path /director_ssl/ca)
+
+  if [ ! -f $JUMPBOX_KEY ]; then
+     ssh-keygen -f ~/.ssh/known_hosts -R $BOSH_ENVIRONMENT
+     ssh-keyscan -H $BOSH_ENVIRONMENT >> ~/.ssh/known_hosts
+
+     bosh int $BOSH_LITE_AWS/creds.yml --path=/jumpbox_ssh/private_key  > $JUMPBOX_KEY
+     chmod 600 $JUMPBOX_KEY
+  fi
 fi
 
 export BOSH_GW_HOST=$BOSH_ENVIRONMENT
@@ -32,3 +40,7 @@ export BOSH_GW_USER=jumpbox
 
 ## Supports CF Deployment given EXTERNAL_IP
 export SYSTEM_DOMAIN=${EXTERNAL_IP}.sslip.io
+
+if [ ! -f $WORKSPACE/bosh_env.sh ]; then
+  echo "source $SCRIPTPATH/$SCRIPT" > $WORKSPACE/bosh_env.sh
+fi

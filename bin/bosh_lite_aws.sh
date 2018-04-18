@@ -6,7 +6,7 @@ export WORKSPACE=${WORKSPACE:-$SCRIPTPATH/../workspace}
 
 source $SCRIPTPATH/common.sh
 
-BOSH_LITE_AWS=${BOSH_LITE_AWS:-$WORKSPACE/bosh-lite-aws}
+export BOSH_LITE_AWS=${BOSH_LITE_AWS:-$WORKSPACE/bosh-lite-aws}
 
 export BOSH_NON_INTERACTIVE=${BOSH_NON_INTERACTIVE:-true}
 
@@ -27,7 +27,6 @@ else
 fi
 
 source $SCRIPTPATH/bosh-common.sh
-source $SCRIPTPATH/bosh_aws_env.sh
 
 function run_bosh_aws_cmd() {
 
@@ -85,14 +84,6 @@ function load_bosh_aws_env() {
 
     ## Setup bosh env alias and capture $JUMPBOX_KEY
     bosh alias-env bosh-lite-aws -e $BOSH_ENVIRONMENT --ca-cert "$BOSH_CA_CERT"
-
-    if [ ! -f $JUMPBOX_KEY ]; then
-     ssh-keygen -f ~/.ssh/known_hosts -R $BOSH_ENVIRONMENT
-     ssh-keyscan -H $BOSH_ENVIRONMENT >> ~/.ssh/known_hosts
-
-     bosh int $BOSH_AWS_LITE/creds.yml --path=/jumpbox_ssh/private_key  > $JUMPBOX_KEY
-     chmod 600 $JUMPBOX_KEY
-    fi
 
 }
 
