@@ -377,6 +377,8 @@ fi
 
 bucc env > $WORKSPACE/bosh_env.sh
 echo "export PATH=\$PATH:$SCRIPTPATH" >> $WORKSPACE/bosh_env.sh
+source $WORKSPACE/bosh_env.sh
+echo "$BOSH_CA_CERT" > $WORKSPACE/bosh_root_ca_cert.pem
 
 }
 

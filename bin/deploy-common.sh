@@ -125,12 +125,13 @@ function showUsage() {
     echo "  -b                        Enable LDAP Management Authorization access" 
     echo "  -c                        Enable LDAP Application Authorization access" 
     echo "  -w                        Make Windows deployment" 
+    echo "  -o                        Enables On Demand Broker" 
     echo "  -k                        Keep Errand(s) Alive" 
     echo "  -x extra bosh params      Additional parameters to be passed to bosh"
 }
 
 
-while getopts "t:a:nbcr:l:s:p:v:x:ewkh" arg; do
+while getopts "t:a:nbcr:l:s:p:v:x:ewkoh" arg; do
     case "${arg}" in
         t) 
             TLS_PATH=$( echo $(cd $(dirname "$OPTARG") && pwd -P)/$(basename "$OPTARG") )
@@ -158,6 +159,9 @@ while getopts "t:a:nbcr:l:s:p:v:x:ewkh" arg; do
             ;;
         c) 
             aldap=true
+            ;;
+        o) 
+            ON_DEMAND_BROKER=true
             ;;
         r) 
             TCP_PATH=$( echo $(cd $(dirname "$OPTARG") && pwd -P)/$(basename "$OPTARG") )
@@ -272,6 +276,10 @@ if [ -n "$TCP_PATH" ]; then
     TCP_ROUTES_VARS="-l $TCP_PATH"
 fi
 
+if [[ $ON_DEMAND_BROKER == true ]]; then 
+   ON_DEMAND_BROKER_OPS="-o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/on_demand_defined_service_catalog.yml"
+fi 
+
 checkSolaceReleases
 
 export SOLACE_VMR_RELEASE=$( bosh releases --json | jq '.Tables[].Rows[] | select(.name | contains("solace-vmr")) | .version' | sed 's/\"//g' | sort -r | head -1 )
@@ -280,12 +288,14 @@ export TEMPLATE_DIR=${TEMPLATE_DIR:-$SCRIPTPATH/../templates/$TEMPLATE_VERSION}
 
 OPS_BASE=${OPS_BASE:-" -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/set_plan_inventory.yml -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/bosh_lite.yml -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/enable_global_access_to_plans.yml "}
 
-FEATURES_OPS=${FEATURES_OPS:-"$ENABLE_LDAP_OPS $ENABLE_SYSLOG_OPS $ENABLE_MANAGEMENT_ACCESS_LDAP_OPS $ENABLE_APPLICATION_ACCESS_LDAP_OPS $SET_SOLACE_VMR_CERT_OPS $DISABLE_SERVICE_BROKER_CERTIFICATE_VALIDATION_OPS $ENABLE_TCP_ROUTES_OPS $MAKE_WINDOWS_DEPLOYMENT"}
+FEATURES_OPS=${FEATURES_OPS:-"$ENABLE_LDAP_OPS $ENABLE_SYSLOG_OPS $ENABLE_MANAGEMENT_ACCESS_LDAP_OPS $ENABLE_APPLICATION_ACCESS_LDAP_OPS $SET_SOLACE_VMR_CERT_OPS $DISABLE_SERVICE_BROKER_CERTIFICATE_VALIDATION_OPS $ENABLE_TCP_ROUTES_OPS $MAKE_WINDOWS_DEPLOYMENT $ON_DEMAND_BROKER_OPS"}
 FEATURES_VARS=${FEATURES_VARS:-"$TLS_VARS $TCP_ROUTES_VARS $SYSLOG_VARS $LDAP_VARS "}
 
 VARS_STORE=${VARS_STORE:-"--vars-store $WORKSPACE/deployment-vars.yml "}
 
 CMD_VARS=${CMD_VARS:="-v system_domain=$SYSTEM_DOMAIN -v app_domain=$SYSTEM_DOMAIN -v cf_deployment=$CF_DEPLOYMENT "}
+
+BOSH_ENV_VARS=${BOSH_ENV_VARS:="-v bosh_url=$BOSH_ENVIRONMENT --var-file=bosh_root_ca_cert=$WORKSPACE/bosh_root_ca_cert.pem -v bosh_authentication_username=$BOSH_CLIENT -v bosh_authentication_password=$BOSH_CLIENT_SECRET "}
 
 ## If not defined and found in templates
 if [ -z "$RELEASE_VARS" ] && [ -f $TEMPLATE_DIR/release-vars.yml ]; then
@@ -295,5 +305,5 @@ fi
 # Accept if defined or default to the version from $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME
 RELEASE_VARS=${RELEASE_VARS:-" -l $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/release-vars.yml"}
 
-BOSH_PARAMS=" $OPS_BASE $FEATURES_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/is_${VMR_EDITION}.yml $VARS_STORE $CMD_VARS -l $VARS_FILE $FEATURES_VARS $RELEASE_VARS $EXTRA_BOSH_PARAMS"
+BOSH_PARAMS=" $OPS_BASE $FEATURES_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/is_${VMR_EDITION}.yml $VARS_STORE $CMD_VARS -l $VARS_FILE $FEATURES_VARS $RELEASE_VARS $BOSH_ENV_VARS $EXTRA_BOSH_PARAMS"
 

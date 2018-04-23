@@ -1,3 +1,13 @@
 solace_load_version: soltr_8.9.0.1008
 bosh_stemcell_version: "3541.10"
 solace_service_broker_jar: solace-service-broker-0.0.1054.jar
+od_broker_release: on-demand-service-broker
+od_broker_version: latest
+od_broker_name: od_solace_psp
+od_broker_route_name: od_solace_psp
+od_broker_port: 8080
+solace_vmr_release_version: "1.4.0"
+docker_release_version: "30.1.4"
+service_adapter_release: solace-service-adapter
+service_adapter_version: 3+dev.4
+disable_ssl_cert_verification: true
