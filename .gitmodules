@@ -1,3 +1,3 @@
 [submodule "cf-solace-messaging-deployment"]
 	path = cf-solace-messaging-deployment
-	url = https://github.com/SolaceDev/cf-solace-messaging-deployment/
+	url = https://github.com/SolaceLabs/cf-solace-messaging-deployment/
