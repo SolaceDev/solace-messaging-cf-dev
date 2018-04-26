@@ -15,5 +15,4 @@ fi
 
 deleteSolaceDeployment
 deleteSolaceReleases
-deleteOrphanedDisks
 

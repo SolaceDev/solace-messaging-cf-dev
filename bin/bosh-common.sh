@@ -86,8 +86,10 @@ function prepareBosh() {
 
 function deleteOrphanedDisks() {
 
-ORPHANED_DISKS_COUNT=$( bosh disks --orphaned --json | jq '.Tables[].Rows[] | select(.deployment | contains("solace_messaging")) | .disk_cid' | sed 's/\"//g' | wc -l )
-ORPHANED_DISKS=$( bosh disks --orphaned --json | jq '.Tables[].Rows[] | select(.deployment | contains("solace_messaging")) | .disk_cid' | sed 's/\"//g' )
+SELECTED_DEPLOYMENT=${1:-$DEPLOYMENT_NAME}
+
+ORPHANED_DISKS_COUNT=$( bosh disks --orphaned --json | jq ".Tables[].Rows[] | select(.deployment | contains(\"$SELECTED_DEPLOYMENT\")) | .disk_cid" | sed 's/\"//g' | wc -l )
+ORPHANED_DISKS=$( bosh disks --orphaned --json | jq ".Tables[].Rows[] | select(.deployment | contains(\"$SELECTED_DEPLOYMENT\")) | .disk_cid" | sed 's/\"//g' )
 
 
 if [ "$ORPHANED_DISKS_COUNT" -gt "0" ]; then
@@ -101,7 +103,7 @@ if [ "$ORPHANED_DISKS_COUNT" -gt "0" ]; then
  done
 
 else
-   echo "No orphaned disks found: $ORPHANED_DISKS_COUNT"
+   echo "Deployment [$SELECTED_DEPLOYMENT] - no orphaned disks found: $ORPHANED_DISKS_COUNT"
 fi
 
 }
@@ -117,7 +119,7 @@ function shutdownVMRJobs() {
  echo "Looking for VM job $VM_JOB" 
  VM_FOUND_COUNT=`$BOSH_CMD vms | grep $VM_JOB | wc -l`
  VM_RUNNING_FOUND_COUNT=`$BOSH_CMD vms --json | jq '.Tables[].Rows[] | select(.process_state=="running") | .instance' | grep $VM_JOB |  wc -l`
- DEPLOYMENT_FOUND_COUNT=`$BOSH_CMD deployments | grep $DEPLOYMENT_NAME | wc -l`
+ DEPLOYMENT_FOUND_COUNT=$(bosh deployments --json | jq '.Tables[].Rows[] | .name ' | sed 's/\"//g' | grep "^$DEPLOYMENT_NAME\$" | wc -l )
  RELEASE_FOUND_COUNT=`$BOSH_CMD releases | grep solace-vmr | wc -l`
 
  if [ "$VM_RUNNING_FOUND_COUNT" -eq "1" ]; then
@@ -237,17 +239,44 @@ fi
 
 }
 
-function deleteSolaceDeployment() {
+function runErrand() {
 
- SOLACE_DEPLOYMENT_FOUND_COUNT=`bosh deployments | grep solace_messaging | wc -l`
- if [ "$SOLACE_DEPLOYMENT_FOUND_COUNT" -eq "1" ]; then
+ SELECTED_DEPLOYMENT=${1:-$DEPLOYMENT_NAME}
+ ERRAND_NAME=$2
+ DEPLOYMENT_FOUND_COUNT=$(bosh deployments --json | jq '.Tables[].Rows[] | .name ' | sed 's/\"//g' | grep "^$SELECTED_DEPLOYMENT\$" | wc -l )
+ if [ "$DEPLOYMENT_FOUND_COUNT" -eq "1" ] && [ ! -z $ERRAND_NAME ]; then
 
-  bosh -d solace_messaging run-errand delete-all
-
-  bosh -d solace_messaging delete-deployment
+  FOUND_ERRAND=$( bosh -d $SELECTED_DEPLOYMENT errands --json | jq ".Tables[].Rows[] | .name " | grep "$ERRAND_NAME" | wc -l )
+  if [ $FOUND_ERRAND -eq "1" ]; then
+     bosh -d $SELECTED_DEPLOYMENT run-errand $ERRAND_NAME
+  else
+     echo "Errand [$ERRAND_NAME] not found for deployment $SELECTED_DEPLOYMENT]"
+  fi
 
  else
-     echo "No solace messaging deployment found: $SOLACE_DEPLOYMENT_FOUND_COUNT"
+     echo "Deployment [$SELECTED_DEPLOYMENT] not found: $DEPLOYMENT_FOUND_COUNT, or missing required errand name [$ERRAND_NAME]"
+ fi
+
+}
+
+function deleteSolaceDeployment() {
+  SELECTED_DEPLOYMENT=${1:-$DEPLOYMENT_NAME}
+  runErrand $SELECTED_DEPLOYMENT delete-all
+  deleteDeployment $SELECTED_DEPLOYMENT
+  deleteOrphanedDisks $SELECTED_DEPLOYMENT
+}
+
+function deleteDeployment() {
+
+ SELECTED_DEPLOYMENT=${1:-$DEPLOYMENT_NAME}
+
+ DEPLOYMENT_FOUND_COUNT=$(bosh deployments --json | jq '.Tables[].Rows[] | .name ' | sed 's/\"//g' | grep "^$SELECTED_DEPLOYMENT\$" | wc -l )
+ if [ "$DEPLOYMENT_FOUND_COUNT" -eq "1" ]; then
+
+  bosh -d $SELECTED_DEPLOYMENT delete-deployment
+
+ else
+     echo "Deployment [$SELECTED_DEPLOYMENT] not found: $DEPLOYMENT_FOUND_COUNT"
  fi
 
 }
