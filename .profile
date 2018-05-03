@@ -11,13 +11,24 @@ export WORKSPACE=${WORKSPACE:-$HOME/workspace}
 export SYSTEM_DOMAIN=${SYSTEM_DOMAIN:-"bosh-lite.com"}
 export CF_ADMIN_PASSWORD=${CF_ADMIN_PASSWORD:-"admin"}
 
+LOCKFILE=$HOME/.env.lck
+
 if [ -f $WORKSPACE/bucc/bin/bucc ]; then
-   $WORKSPACE/bucc/bin/bucc env > $WORKSPACE/.env
+   ## Avoids concurrent writes
+   (
+     flock -x 200
+     $WORKSPACE/bucc/bin/bucc env > $WORKSPACE/.env
+     flock -u 200
+   ) 200>$LOCKFILE
 fi
 
 if [ -f $WORKSPACE/.env ]; then
+   ## Avoids reads during writes
+   exec 200>$LOCKFILE
+   flock -x 200
    source $WORKSPACE/.env
    export BOSH_IP=$BOSH_ENVIRONMENT
+   flock -u 200
 fi
 
 if [ -f $WORKSPACE/deployment-vars.yml ]; then
