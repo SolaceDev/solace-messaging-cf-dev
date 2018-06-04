@@ -1,0 +1,34 @@
+- type: remove
+  path: /instance_groups/name=Community-VMR/jobs/5
+- type: remove
+  path: /instance_groups/name=Community-VMR/jobs/4
+- type: remove
+  path: /instance_groups/name=Shared-VMR/jobs/5
+- type: remove
+  path: /instance_groups/name=Shared-VMR/jobs/4 
+- type: remove
+  path: /instance_groups/name=Large-VMR/jobs/5
+- type: remove
+  path: /instance_groups/name=Large-VMR/jobs/4
+- type: remove
+  path: /instance_groups/name=Medium-HA-VMR/jobs/5
+- type: remove
+  path: /instance_groups/name=Medium-HA-VMR/jobs/4
+- type: remove
+  path: /instance_groups/name=Large-HA-VMR/jobs/5
+- type: remove
+  path: /instance_groups/name=Large-HA-VMR/jobs/4
+- type: replace
+  path: /instance_groups/name=deploy-all/properties/solace_messaging?/auto_services?/name=p-mysql/plan
+  value: 512mb
+- type: replace
+  path: /instance_groups/name=delete-all/properties/solace_messaging?/auto_services?/name=p-mysql/plan
+  value: 512mb
+- type: replace
+  path: /instance_groups/name=deploy-all/properties/cf/admin_password?
+  value: admin
+- type: replace
+  path: /instance_groups/name=delete-all/properties/cf/admin_password?
+  value: admin
+
+
