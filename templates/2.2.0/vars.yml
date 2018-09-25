@@ -1,0 +1,35 @@
+##
+# Default testing plan, for production deployment please choose a High availability Plan.
+##
+mysql_plan: 100mb
+
+# CF Space and Org in which solace messaging service broker to be installed.
+solace_broker_cf_organization: solace
+solace_broker_cf_space: solace-broker
+
+# The client secret for the "solace_router" uaa client
+solace_router_client_secret: 1234
+solace_router_client_id: solace_router
+
+# The start port seed from which all ports allocation are based.
+starting_port: 7000
+
+# Increase security by hiding service instance credentials from VCAP services
+secure_service_credentials: false
+
+# This is the password set for the "admin" user on the VMR
+vmr_admin_password: admin1
+
+db_encryption_key:
+db_encryption_key_prev:
+
+##
+# Control populating each plan with VMRs
+# Note that the "HA" Plans need to be provided in groups of 3
+##
+shared_plan_instances: 1
+large_plan_instances: 0 
+medium_ha_plan_instances: 0
+large_ha_plan_instances: 0 
+standard_medium_plan_instances: 0
+standard_medium_ha_plan_instances: 0
