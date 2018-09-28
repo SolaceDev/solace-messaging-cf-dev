@@ -366,14 +366,7 @@ You can go ahead download and test the [Solace Sample Apps](https://github.com/S
 
 ## How to login and access CF
 
-On Windows: 
-
-~~~~
-cf api https://api.local.pcfdev.io --skip-ssl-validation
-cf auth admin admin
-~~~~
-
-On Linux: 
+On Linux and WSL:
 
 This can be executed in the cli-tools vm or locally. 
 If it is ran locally it needs to run inside the solace-messaging-cf-dev/bin directory.
@@ -395,9 +388,6 @@ cf m
 ## Service Broker
 
 You can use your browser to examine the deployed service broker dashboard: 
-
-* On Windows (non-WSL), having PCF-Dev deployed service broker
-  * [ service broker dashboard ](http://solace-pubsub-broker.local.pcfdev.io/)
 
 * On Linux, Mac or WSL, having service broker deployed on CF-Deployment
   * [ service broker dashboard ](http://solace-pubsub-broker.bosh-lite.com/)
@@ -523,6 +513,39 @@ Now ssh to the message broker. The admin password is whatever you had set in the
 
 ~~~~
 ssh -p 3022 admin@10.244.0.150
+~~~~
+
+## Working with stemcells
+
+### Listing stemcells
+
+From the cli-tools vm:
+~~~~
+bosh stemcells
+~~~~
+
+### Adding stemcells
+
+From the cli-tools vm, and assisted by scripts in this project. This example adds many many stemcells to be used 
+~~~~
+export REQUIRED_STEMCELLS="$REQUIRED_STEMCELLS ubuntu-trusty:3586.40"
+export REQUIRED_STEMCELLS="$REQUIRED_STEMCELLS ubuntu-trusty:3541.10"
+export REQUIRED_STEMCELLS="$REQUIRED_STEMCELLS ubuntu-xenial:97"
+export REQUIRED_STEMCELLS="$REQUIRED_STEMCELLS ubuntu-xenial:97.17"
+echo $REQUIRED_STEMCELLS
+loadStemcells
+bosh stemcells
+~~~~
+
+### Using a specific stemcell with the Solace PubSub+ deployment.
+
+The stemcell used by the Solace PubSub+ deployment can be changed using one of these two options:
+
+Option 1 - Modify the release-vars.yml changing the bosh_stemcell and bosh_stemcell_version
+
+Option 2 - Provide parameters to the solace_deploy.sh, in this example using stemcell ubuntu-xenial version 97 for the deployment.
+~~~~
+solace_deploy.sh -x " -v bosh_stemcell=ubuntu-xenial -v bosh_stemcell_version=\"97\" "
 ~~~~
 
 ## How to cleanup

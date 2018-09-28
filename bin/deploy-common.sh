@@ -84,7 +84,7 @@ function checkDeploymentRequirements() {
  check_cf_marketplace_access
 
  ## Check BOSH Stemcell is uploaded
- prepareBosh
+ loadStemcells
 
 }
 
@@ -313,6 +313,7 @@ MISC_VARS=${MISC_VARS:-""}
 
 ## If not defined and found in templates
 if [ -z "$RELEASE_VARS" ] && [ -f "$TEMPLATE_DIR/release-vars.yml" ]; then
+   RELEASE_VARS_FILE=$TEMPLATE_DIR/release-vars.yml
    RELEASE_VARS=" -l $TEMPLATE_DIR/release-vars.yml"
 fi
 
@@ -320,8 +321,28 @@ if [ ! -z "$DEPLOYMENT_NAME" ]; then
    MISC_VARS="-v deployment_name=$DEPLOYMENT_NAME $MISC_VARS"
 fi
 
+if [ -z "$RELEASE_VARS" ]; then
+  RELEASE_VARS_FILE=$CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/release-vars.yml
+  RELEASE_VARS=" -l $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/release-vars.yml"
+fi
 # Accept if defined or default to the version from $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME
-RELEASE_VARS=${RELEASE_VARS:-" -l $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/release-vars.yml"}
+
+## 
+# Handle stemcell loading based on release-vars contents
+##
+if [ -f "$RELEASE_VARS_FILE" ]; then
+   # Find it or accept the default
+   RELEASE_STEMCELL=$(bosh int $RELEASE_VARS_FILE --path /bosh_stemcell)
+   RELEASE_STEMCELL_VERSION=$(bosh int $RELEASE_VARS_FILE --path /bosh_stemcell_version)
+
+   ## Accept the default
+   RELEASE_STEMCELL=${RELEASE_STEMCELL:-$STEMCELL}
+   RELEASE_STEMCELL_VERSION=${RELEASE_STEMCELL_VERSION:-$STEMCELL_VERSION}
+
+   if [ ! "$RELEASE_STEMCELL" == "$STEMCELL" ] || [ ! "$RELEASE_STEMCELL_VERSION" == "$STEMCELL_VERSION" ]; then
+      export REQUIRED_STEMCELLS="$REQUIRED_STEMCELLS $RELEASE_STEMCELL:$RELEASE_STEMCELL_VERSION"
+   fi
+fi
 
 BOSH_PARAMS=" $OPS_BASE $MYSQL_OPS $FEATURES_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/is_${VMR_EDITION}.yml $VARS_STORE $CMD_VARS -l $VARS_FILE $FEATURES_VARS $RELEASE_VARS $MISC_VARS $EXTRA_BOSH_PARAMS"
 

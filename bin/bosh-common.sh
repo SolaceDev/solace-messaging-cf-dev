@@ -5,7 +5,7 @@ export LOG_FILE=${LOG_FILE:-"$WORKSPACE/bosh_deploy.log"}
 
 ######################################
 
-export BOSH_IP=${BOSH_IP:-"192.168.50.4"}
+export BOSH_IP=${BOSH_IP:-"192.168.50.6"}
 export BOSH_CMD="/usr/local/bin/bosh"
 export BOSH_CLIENT=${BOSH_CLIENT:-admin}
 export BOSH_CLIENT_SECRET=${BOSH_CLIENT_SECRET:-admin}
@@ -39,20 +39,7 @@ trap cleanupWorkTemp EXIT INT TERM HUP
 function targetBosh() {
 
   ## Setup to access target bosh-lite
-    
-  if [ ! -f $WORKSPACE/.env ] && [ "$BOSH_IP" == "192.168.50.4" ]; then
-     # Old bosh-lite
-     if [ ! -d $WORKSPACE/bosh-lite ]; then
-       (cd $WORKSPACE; git clone https://github.com/cloudfoundry/bosh-lite.git)
-     fi 
-
-     # bosh target $BOSH_IP alias as 'lite'
-     BOSH_TARGET_LOG=$( $BOSH_CMD alias-env lite -e $BOSH_IP --ca-cert=$WORKSPACE/bosh-lite/ca/certs/ca.crt --client=admin --client-secret=admin  )
-  else
-     # New bosh-lite
-     BOSH_TARGET_LOG=$( $BOSH_CMD alias-env lite -e $BOSH_IP )
-  fi
-
+  BOSH_TARGET_LOG=$( $BOSH_CMD alias-env lite -e $BOSH_IP )
   if [ $? -eq 0 ]; then
      # Login will rely on BOSH_* env vars..
      BOSH_LOGIN_LOG=$( BOSH_CLIENT=$BOSH_CLIENT BOSH_CLIENT_SECRET=$BOSH_CLIENT_SECRET $BOSH_CMD log-in )
@@ -69,7 +56,7 @@ function targetBosh() {
 }
 
 
-function prepareBosh() { 
+function loadStemcells() { 
 
  for REQUIRED_STEMCELL in $REQUIRED_STEMCELLS; do
 
@@ -457,7 +444,7 @@ fi
 
 check_bucc
 
-echo "Setting VM MEMORY to $VM_MEMORY, VM_CPUS to $VM_CPUS, VM_EPHEMERAL_DISK_SIZE to $VM_EPHEMERAL_DISK_SIZE"
+echo "Setting VM_MEMORY [ $VM_MEMORY ], VM_CPUS [ $VM_CPUS ], VM_EPHEMERAL_DISK_SIZE [ $VM_EPHEMERAL_DISK_SIZE ], VM_DISK_SIZE [ $VM_DISK_SIZE ]"
 sed -i "/vm_memory:/c\vm_memory: $VM_MEMORY" $WORKSPACE/bucc/ops/cpis/virtualbox/vars.tmpl
 sed -i "/vm_cpus:/c\vm_cpus: $VM_CPUS" $WORKSPACE/bucc/ops/cpis/virtualbox/vars.tmpl
 sed -i "/vm_ephemeral_disk:/c\vm_ephemeral_disk: $VM_EPHEMERAL_DISK_SIZE" $WORKSPACE/bucc/ops/cpis/virtualbox/vars.tmpl
