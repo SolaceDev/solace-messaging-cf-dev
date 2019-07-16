@@ -184,51 +184,21 @@ function showUsage() {
     echo "  -x extra bosh params      Additional parameters to be passed to bosh"
     echo "  -y                        Deploy highly available internal mysql database"
     echo "  -z                        Use external mysql database"
-    echo "  -0                        Disable standard-medium service plan"
-    echo "  -1                        Disable standard-medium-ha service plan"
-    echo "  -2                        Disable standard-plan-3 service plan"
-    echo "  -3                        Disable standard-plan-4 service plan"
-    echo "  -4                        Disable enterprise-shared service plan"
-    echo "  -5                        Disable enterprise-large service plan"
-    echo "  -6                        Disable enterprise-medium-ha service plan"
-    echo "  -7                        Disable enterprise-large-ha service plan"
-    echo "  -8                        Disable enterprise-plan-5 service plan"
-    echo "  -9                        Disable enterprise-plan-6 service plan"
+    echo "  -d 0                      Disable standard-medium service plan"
+    echo "  -d 1                      Disable standard-medium-ha service plan"
+    echo "  -d 2                      Disable standard-plan-3 service plan"
+    echo "  -d 3                      Disable standard-plan-4 service plan"
+    echo "  -d 4                      Disable enterprise-shared service plan"
+    echo "  -d 5                      Disable enterprise-large service plan"
+    echo "  -d 6                      Disable enterprise-medium-ha service plan"
+    echo "  -d 7                      Disable enterprise-large-ha service plan"
+    echo "  -d 8                      Disable enterprise-plan-5 service plan"
+    echo "  -d 9                      Disable enterprise-plan-6 service plan"
 }
 
 
-while getopts "0123456789a:bcehkl:mnp:r:s:t:u:v:w:x:yz" arg; do
+while getopts "d:a:bcehkl:mnp:r:s:t:u:v:w:x:yz" arg; do
     case "${arg}" in
-        0)
-            DISABLE_STANDARD_MEDIUM_OPS="-o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_standard_medium.yml"
-            ;;
-        1)
-            DISABLE_STANDARD_MEDIUM_HA_OPS="-o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_standard_medium_ha.yml"
-            ;;
-        2)
-            DISABLE_STANDARD_PLAN_3_OPS="-o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_standard_plan_3.yml"
-            ;;
-        3)
-            DISABLE_STANDARD_PLAN_4_OPS="-o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_standard_plan_4.yml"
-            ;;
-        4)
-            DISABLE_ENTERPRISE_SHARED_OPS="-o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_enterprise_shared.yml"
-            ;;
-        5)
-            DISABLE_ENTERPRISE_LARGE_OPS="-o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_enterprise_large.yml"
-            ;;
-        6)
-            DISABLE_ENTERPRISE_MEDIUM_HA_OPS="-o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_enterprise_medium_ha.yml"
-            ;;
-        7)
-            DISABLE_ENTERPRISE_LARGE_HA_OPS="-o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_enterprise_large_ha.yml"
-            ;;
-        8)
-            DISABLE_ENTERPRISE_PLAN_5_OPS="-o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_enterprise_plan_5.yml"
-            ;;
-        9)
-            DISABLE_ENTERPRISE_PLAN_6_OPS="-o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_enterprise_plan_6.yml"
-            ;;
         a)
             SYSLOG_PATH=$( echo $(cd $(dirname "$OPTARG") && pwd -P)/$(basename "$OPTARG") )
 	    if [ ! -f $SYSLOG_PATH ]; then
@@ -243,6 +213,47 @@ while getopts "0123456789a:bcehkl:mnp:r:s:t:u:v:w:x:yz" arg; do
             ;;
         c) 
             aldap=true
+            ;;
+        d)
+            if [ -z "${OPTARG}" ]; then
+                >&2 echo
+                    >&2 echo "Usage: -d <service plan number>"
+                >&2
+                exit 1
+            elif [ "${OPTARG}" -eq 0 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_standard_medium.yml"
+            elif [ "${OPTARG}" -eq 1 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_standard_medium_ha.yml"
+            elif [ "${OPTARG}" -eq 2 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_standard_plan_3.yml"
+            elif [ "${OPTARG}" -eq 3 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_standard_plan_4.yml"
+            elif [ "${OPTARG}" -eq 4 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_enterprise_shared.yml"
+            elif [ "${OPTARG}" -eq 5 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_enterprise_large.yml"
+            elif [ "${OPTARG}" -eq 6 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_enterprise_medium_ha.yml"
+            elif [ "${OPTARG}" -eq 7 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_enterprise_large_ha.yml"
+            elif [ "${OPTARG}" -eq 8 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_enterprise_plan_5.yml"
+            elif [ "${OPTARG}" -eq 9 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_enterprise_plan_6.yml"
+            elif [ "${OPTARG}" -eq 10 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MSSAGING_DEPLOYMENT_HOME/operations/disable_appliance_plan_1.yml"
+            elif [ "${OPTARG}" -eq 11 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_appliance_plan_2.yml"
+            elif [ "${OPTARG}" -eq 12 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_appliance_plan_3.yml"
+            elif [ "${OPTARG}" -eq 13 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_appliance_plan_4.yml"
+            else
+                >&2 echo
+                >&2 echo "Unknown service plan $OPTARG"
+                >&2 echo
+                exit 1
+            fi
             ;;
         e) 
 	        VMR_EDITION="enterprise"
@@ -427,7 +438,7 @@ FEATURES_VARS=${FEATURES_VARS:-"$TLS_VARS $TCP_ROUTES_VARS $SYSLOG_VARS $LDAP_VA
 
 VARS_STORE=${VARS_STORE:-"--vars-store $WORKSPACE/deployment-vars.yml "}
 
-SERVICE_PLAN_OPS=${SERVICE_PLAN_OPS:-"$DISABLE_STANDARD_MEDIUM_OPS $DISABLE_STANDARD_MEDIUM_HA_OPS $DISABLE_STANDARD_PLAN_3_OPS $DISABLE_STANDARD_PLAN_4_OPS $DISABLE_ENTERPRISE_SHARED_OPS $DISABLE_ENTERPRISE_LARGE_OPS $DISABLE_ENTERPRISE_MEDIUM_HA_OPS $DISABLE_ENTERPRISE_LARGE_HA_OPS $DISABLE_ENTERPRISE_PLAN_5_OPS $DISABLE_ENTERPRISE_PLAN_6_OPS"}
+# SERVICE_PLAN_OPS=${SERVICE_PLAN_OPS:-"$DISABLE_STANDARD_MEDIUM_OPS $DISABLE_STANDARD_MEDIUM_HA_OPS $DISABLE_STANDARD_PLAN_3_OPS $DISABLE_STANDARD_PLAN_4_OPS $DISABLE_ENTERPRISE_SHARED_OPS $DISABLE_ENTERPRISE_LARGE_OPS $DISABLE_ENTERPRISE_MEDIUM_HA_OPS $DISABLE_ENTERPRISE_LARGE_HA_OPS $DISABLE_ENTERPRISE_PLAN_5_OPS $DISABLE_ENTERPRISE_PLAN_6_OPS"}
 
 CMD_VARS=${CMD_VARS:="-v system_domain=$SYSTEM_DOMAIN -v app_domain=$SYSTEM_DOMAIN -v docker_version=$DOCKER_RELEASE_VERSION -v cf_deployment=$CF_DEPLOYMENT -v solace_pubsub_version=$SOLACE_PUBSUB_RELEASE "}
 
