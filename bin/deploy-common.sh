@@ -174,6 +174,7 @@ function showUsage() {
     echo "  -l <ldap_config.yml>      Provide LDAP Config file path"   
     echo "  -m                        Use MySQL For PCF"
     echo "  -n                        Disable Service Broker TLS Certificate Validation"
+    echo "  -o <oauth_config.yml>     Enable OAUTH authentication"
     echo "  -p <vmr_admin_password>   Provide VMR Admin Password "
     echo "  -r <tcp_config.yml>       Provide TCP Routes Config file path" 
     echo "  -s <starting_port>        Provide Starting Port "
@@ -197,7 +198,7 @@ function showUsage() {
 }
 
 
-while getopts "d:a:bcehkl:mnp:r:s:t:u:v:w:x:yz" arg; do
+while getopts "d:a:bcehkl:mno:p:r:s:t:u:v:w:x:yz" arg; do
     case "${arg}" in
         a)
             SYSLOG_PATH=$( echo $(cd $(dirname "$OPTARG") && pwd -P)/$(basename "$OPTARG") )
@@ -278,6 +279,15 @@ while getopts "d:a:bcehkl:mnp:r:s:t:u:v:w:x:yz" arg; do
         n) 
             disablebrokertls=true
             ;; 
+        o) 
+            OAUTH_PATH=$( echo $(cd $(dirname "$OPTARG") && pwd -P)/$(basename "$OPTARG") )
+	    if [ ! -f $OAUTH_PATH ]; then
+		       >&2 echo
+       		       >&2 echo "File not found: $OPTARG" >&2
+		       >&2 echo
+		       exit 1
+            fi
+	        ;;
         p)
             vmr_admin_password="${OPTARG}"
             ;;
@@ -397,6 +407,11 @@ if [[ $aldap == true ]]; then
    ENABLE_APPLICATION_ACCESS_LDAP_OPS="-o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/set_application_access_ldap.yml" 
 fi 
 
+if [ -n "$OAUTH_PATH" ]; then 
+   ENABLE_OAUTH_OPS="-o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/enable_oauth.yml" 
+   OAUTH_VARS="-l $OAUTH_PATH"
+fi 
+
 if [ -n "$TCP_PATH" ]; then
     ENABLE_TCP_ROUTES_OPS="-o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/enable_tcp_routes.yml"
     TCP_ROUTES_VARS="-l $TCP_PATH"
@@ -433,8 +448,8 @@ fi
 
 OPS_BASE=${OPS_BASE:-" -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/set_plan_inventory.yml -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/bosh_lite.yml -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/enable_global_access_to_plans.yml"}
 
-FEATURES_OPS=${FEATURES_OPS:-"$ENABLE_LDAP_OPS $ENABLE_SYSLOG_OPS $ENABLE_MANAGEMENT_ACCESS_LDAP_OPS $ENABLE_APPLICATION_ACCESS_LDAP_OPS $SET_SOLACE_VMR_CERT_OPS $DISABLE_SERVICE_BROKER_CERTIFICATE_VALIDATION_OPS $ENABLE_TCP_ROUTES_OPS $ENABLE_WEB_HOOK_OPS $ENABLE_MONITOR_USER_OPS"}
-FEATURES_VARS=${FEATURES_VARS:-"$TLS_VARS $TCP_ROUTES_VARS $SYSLOG_VARS $LDAP_VARS $WEB_HOOK_VARS $MONITOR_USER_VARS"}
+FEATURES_OPS=${FEATURES_OPS:-"$ENABLE_LDAP_OPS $ENABLE_SYSLOG_OPS $ENABLE_MANAGEMENT_ACCESS_LDAP_OPS $ENABLE_APPLICATION_ACCESS_LDAP_OPS $SET_SOLACE_VMR_CERT_OPS $DISABLE_SERVICE_BROKER_CERTIFICATE_VALIDATION_OPS $ENABLE_TCP_ROUTES_OPS $ENABLE_WEB_HOOK_OPS $ENABLE_MONITOR_USER_OPS $ENABLE_OAUTH_OPS"}
+FEATURES_VARS=${FEATURES_VARS:-"$TLS_VARS $TCP_ROUTES_VARS $SYSLOG_VARS $LDAP_VARS $WEB_HOOK_VARS $MONITOR_USER_VARS $OAUTH_VARS"}
 
 VARS_STORE=${VARS_STORE:-"--vars-store $WORKSPACE/deployment-vars.yml "}
 

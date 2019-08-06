@@ -362,6 +362,7 @@ function deleteSolaceReleases() {
  deleteBOSHRelease solace-pubsub-broker
  deleteBOSHRelease solace-pubsub
  deleteBOSHRelease solace-service-adapter
+ deleteBOSHRelease solace-bosh-dns-aliases
 
 }
 
