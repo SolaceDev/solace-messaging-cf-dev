@@ -249,6 +249,10 @@ while getopts "d:a:bcehkl:mno:p:r:s:t:u:v:w:x:yz" arg; do
                 SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_appliance_plan_3.yml"
             elif [ "${OPTARG}" -eq 13 ]; then
                 SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_appliance_plan_4.yml"
+            elif [ "${OPTARG}" -eq 14 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_appliance_plan_5.yml"
+            elif [ "${OPTARG}" -eq 15 ]; then
+                SERVICE_PLAN_OPS="$SERVICE_PLAN_OPS -o $CF_SOLACE_MESSAGING_DEPLOYMENT_HOME/operations/disable_appliance_plan_6.yml"
             else
                 >&2 echo
                 >&2 echo "Unknown service plan $OPTARG"
