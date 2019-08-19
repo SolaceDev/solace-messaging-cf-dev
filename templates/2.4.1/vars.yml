@@ -1,0 +1,115 @@
+##
+# Default testing plan, for production deployment please choose a High availability Plan.
+##
+mysql_plan: 100mb
+
+# CF Space and Org in which solace messaging service broker to be installed.
+solace_broker_cf_organization: solace
+solace_broker_cf_space: solace-broker
+
+# The client secret for the "solace_router" uaa client
+solace_router_client_secret: 1234
+solace_router_client_id: solace_router
+
+# The start port seed from which all ports allocation are based.
+starting_port: 7000
+
+# Increase security by hiding service instance credentials from VCAP services
+secure_service_credentials: false
+
+# Automatically manage application security groups
+application_security_groups: true
+
+# This is the password set for the "admin" user on the VMR
+vmr_admin_password: admin1
+
+# These are the current and previous keys used to encrypt password columns in the service broker db.
+db_encryption_key:
+db_encryption_key_prev:
+
+##
+# Control populating each plan with VMRs
+# Note that the "HA" Plans need to be provided in groups of 3
+##
+shared_plan_instances: 1
+large_plan_instances: 0 
+medium_ha_plan_instances: 0
+large_ha_plan_instances: 0 
+enterprise_plan_5_instances: 0
+enterprise_plan_6_instances: 0
+standard_medium_plan_instances: 0
+standard_medium_ha_plan_instances: 0
+standard_plan_3_instances: 0
+standard_plan_4_instances: 0
+
+plans:
+  standard_medium:
+    name: standard-medium
+    description: "This is a standard-medium service"
+    point_form_description: [ must be, an array ]
+    isHA: false
+    maxVpns: 1
+    quota: 10
+  standard_medium_ha:
+    name: standard-medium-ha
+    description: "This is a standard-medium-ha service"
+    point_form_description: [ must be, an array ]
+    isHA: true
+    maxVpns: 1
+    quota: 10
+  standard_plan_3:
+    name: standard-plan-3
+    description: "This is a standard service"
+    point_form_description: [ must be, an array ]
+    isHA: false
+    maxVpns: 1
+    quota: 10
+  standard_plan_4:
+    name: standard-plan-4
+    description: "This is a highly available standard service"
+    point_form_description: [ must be, an array ]
+    isHA: true
+    maxVpns: 1
+    quota: 10
+  enterprise_shared:
+    name: enterprise-shared
+    description: "This is an enterprise-shared service"
+    point_form_description: [ must be, an array ]
+    isHA: false
+    maxVpns: 5
+    quota: 10
+  enterprise_large:
+    name: enterprise-large
+    description: "This is an enterprise-large service"
+    point_form_description: [ must be, an array ]
+    isHA: false
+    maxVpns: 2
+    quota: 10
+  enterprise_medium_ha:
+    name: enterprise-medium-ha
+    description: "This is an enterprise-medium-ha service"
+    point_form_description: [ must be, an array ]
+    isHA: true
+    maxVpns: 2
+    quota: 10
+  enterprise_large_ha:
+    name: enterprise-large-ha
+    description: "This is an enterprise-large-ha service"
+    point_form_description: [ must be, an array ]
+    isHA: true
+    maxVpns: 2
+    quota: 10
+  enterprise_plan_5:
+    name: enterprise-plan-5
+    description: "This is an enterprise service"
+    point_form_description: [ must be, an array ]
+    isHA: false
+    maxVpns: 2
+    quota: 10
+  enterprise_plan_6:
+    name: enterprise-plan-6
+    description: "This is an enterprise service"
+    point_form_description: [ must be, an array ]
+    isHA: true
+    maxVpns: 2
+    quota: 10
